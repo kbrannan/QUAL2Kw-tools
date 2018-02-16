@@ -30,6 +30,7 @@ Q2Kw.output <- scan(Q2Kw.out, what = "character", sep = "\n")
 # Average values for parameters
 
 Avg.grab.loc <- grep("Daily average water quality summary for main channel", Q2Kw.output)[1] #First occurence is the target line
+Avg.grab.nm.loc <- Avg.grab.loc + 1
 Avg.grab.sites <- c(Avg.grab.loc + 8, Avg.grab.loc + 9, Avg.grab.loc + 11) # Need to manually set based on site locations
 
 Avg.grab.data <- Q2Kw.output[Avg.grab.sites]
@@ -43,6 +44,12 @@ for (y in 1:length(Avg.grab.data)) {
   Q2Kw.list[[y]] <- t(Q2Kw.list[[y]])
 }
 
+# Get names of columns
+Avg.grab.nm <- as.data.frame(strsplit(Q2Kw.output[Avg.grab.nm.loc], split = "  "))
+
+# Get rid of blanks
+Avg.grab.nm <- Avg.grab.nm[!sapply(Avg.grab.nm, function(x) all(x == ""))]
+
 # Set blank data frame
 Q2Kw.df <- data.frame(stringsAsFactors = F)
 
@@ -50,7 +57,10 @@ Q2Kw.df <- data.frame(stringsAsFactors = F)
 for (z in 1:length(Q2Kw.list)) {
   Q2Kw.df <- bind_rows(Q2Kw.df, as.data.frame(Q2Kw.list[[z]], 
                                           stringsAsFactors = F))
-} 
+}
+
+# Get rid of blanks
+Q2Kw.df <- Q2Kw.df[!sapply(Q2Kw.df, function(x) all(x == ""))]
 
 # Give columns the appropriate names
-names(UY.df) <- header.nm
+names(Q2Kw.df) <- header.nm
