@@ -12,7 +12,7 @@ library(gdata)
 setwd("\\\\deqhq1\\tmdl\\TMDL_WR\\MidCoast\\Models\\Dissolved Oxygen\\Upper Yaquina River - 1710020401\\QUAL2Kw\\2016\\July")
 
 Q2Kw.out <- list.files(pattern = "*.out")
-Q2Kw.out <- Q2Kw.out[!grepl("oldph.out", Q2Kw.out)]
+Q2Kw.out <- Q2Kw.out[!grepl("oldph.out", Q2Kw.out)] # Un-needed file name
 
 # scan in file and process----
 Q2Kw.output <- scan(Q2Kw.out, what = "character", sep = "\n")
@@ -120,7 +120,6 @@ names(Q2Kw.df) <- grab.nm
 Grab.fit.pm.Min <- subset(Q2Kw.df, select = c("Reach", "pH"))
 names(Grab.fit.pm.Min) <- c("Reach", "Min pH")
 
-
 # Need to pull out Max pH----
 Max.grab.loc <- grep("Daily maximum water quality summary for main channel", Q2Kw.output)[1] #First occurence is the target line
 Max.grab.nm.loc <- Max.grab.loc + 1
@@ -165,7 +164,6 @@ names(Q2Kw.df) <- grab.nm
 # Extract Maximum grab sample data for assessment of fit
 Grab.fit.pm.Max <- subset(Q2Kw.df, select = c("Reach", "pH"))
 names(Grab.fit.pm.Max) <- c("Reach", "Max pH")
-
 
 # Extracting temporal data for temperature and dissolved oxgyen----
 Cont.loc <- grep("Diel water quality in the main channel", Q2Kw.output)[1] #First occurence is the target line
@@ -215,7 +213,7 @@ names(Q2Kw.df) <- Cont.nm
 Cont.fit.pm <- subset(Q2Kw.df, select = c("Reach", "Time", "Water temperature", "Dissolved Oygen"))
 names(Cont.fit.pm) <- c("Reach", "Time", "Water temperature", "Dissolved Oxygen")
 
-# Compile all data into one flat data frame and write out to .csv file----
+# Compile all data into one flat data frame and write out to flat text file----
 # Make dataframe first
 list(Cont.fit.pm, Grab.fit.pm.avg, Grab.fit.pm.Max, Grab.fit.pm.Min) %>%
   reduce(left_join, by = "Reach") %>%
