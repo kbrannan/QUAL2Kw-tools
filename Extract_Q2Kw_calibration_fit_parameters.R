@@ -25,6 +25,8 @@ Q2Kw.output <- scan(Q2Kw.out, what = "character", sep = "\n")
 #                 Nitrate + nitrite
 #                 Organic P
 #                 Inorganic P
+#                 Water Temperature
+#                 Dissolved Oxygen
 
 # Will need to manually adjust what sites are extracted
 
