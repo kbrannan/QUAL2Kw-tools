@@ -6,6 +6,7 @@
 
 # Load libraries----
 library(tidyverse)
+library(gdata)
 
 # Set working directory (modify as needed)----
 setwd("\\\\deqhq1\\tmdl\\TMDL_WR\\MidCoast\\Models\\Dissolved Oxygen\\Upper Yaquina River - 1710020401\\QUAL2Kw\\2016\\July")
@@ -168,9 +169,9 @@ names(Grab.fit.pm.Max) <- c("Reach", "Max pH")
 Cont.loc <- grep("Diel water quality in the main channel", Q2Kw.output)[1] #First occurence is the target line
 Cont.nm.loc <- Cont.loc + 1
 # Need to manually set based on site locations
-Cont.sites <- c(Cont.loc + 649, Cont.loc + 665, Cont.loc + 697, Cont.loc + 713, Cont.loc + 729, Cont.loc + 745, Cont.loc + 761, # Reach 5
-                Cont.loc + 778, Cont.loc + 794, Cont.loc + 810, Cont.loc + 826, Cont.loc + 842, Cont.loc + 858, Cont.loc + 874, # Reach 6
-                Cont.loc + 1036, Cont.loc + 1052, Cont.loc + 1068, Cont.loc + 1084, Cont.loc + 1100, Cont.loc + 1116, Cont.loc + 1132) # Reach 
+Cont.sites <- c(Cont.loc + 649, Cont.loc + 665, Cont.loc + 681, Cont.loc + 697, Cont.loc + 713, Cont.loc + 729, Cont.loc + 745, Cont.loc + 761, # Reach 5
+                Cont.loc + 778, Cont.loc + 794, Cont.loc + 810, Cont.loc + 826, Cont.loc + 842, Cont.loc + 858, Cont.loc + 874, Cont.loc + 890, # Reach 6
+                Cont.loc + 1036, Cont.loc + 1052, Cont.loc + 1068, Cont.loc + 1084, Cont.loc + 1100, Cont.loc + 1116, Cont.loc + 1132, Cont.loc + 1148) # Reach 8
 
 Cont.data <- Q2Kw.output[Cont.sites]
 
@@ -213,8 +214,42 @@ Cont.fit.pm <- subset(Q2Kw.df, select = c("Reach", "Time", "Water temperature", 
 names(Cont.fit.pm) <- c("Reach", "Time", "Water temperature", "Dissolved Oxygen")
 
 # Compile all data into one flat data frame and write out to .csv file----
+# Make dataframe first
 list(Cont.fit.pm, Grab.fit.pm.avg, Grab.fit.pm.Max, Grab.fit.pm.Min) %>%
   reduce(left_join, by = "Reach") %>%
     gather(Parameter, Value, -Reach, -Time) %>%
-      distinct(Value, .keep_all = T) %>%
-        write.csv("\\\\deqhq1\\tmdl\\TMDL_WR\\MidCoast\\Models\\Dissolved Oxygen\\PEST-Synthetic-data\\Dan-edits\\Q2Kw_output.csv", row.names = F) # Change path as needed
+      distinct(Value, .keep_all = T) -> Q2Kw.flat.out
+
+# Sub in requested names
+Q2Kw.flat.out$Parameter <- gsub("Water temperature", "temp", Q2Kw.flat.out$Parameter)
+Q2Kw.flat.out$Parameter <- gsub("Dissolved Oxygen", "do", Q2Kw.flat.out$Parameter)
+Q2Kw.flat.out$Parameter <- gsub("Fast CBOD", "fcob", Q2Kw.flat.out$Parameter)
+Q2Kw.flat.out$Parameter <- gsub("Organic N", "orgn", Q2Kw.flat.out$Parameter)
+Q2Kw.flat.out$Parameter <- gsub("NH4-N", "nh4", Q2Kw.flat.out$Parameter)
+Q2Kw.flat.out$Parameter <- gsub("NO3+NO2-N", "no3", Q2Kw.flat.out$Parameter, fixed = T) #Plus sign is a special character; fixed needs to be true
+Q2Kw.flat.out$Parameter <- gsub("Organic P", "orgp", Q2Kw.flat.out$Parameter)
+Q2Kw.flat.out$Parameter <- gsub("Inorganic P", "inorgp", Q2Kw.flat.out$Parameter)
+Q2Kw.flat.out$Parameter <- gsub("pH", "pHave", Q2Kw.flat.out$Parameter)
+Q2Kw.flat.out$Parameter <- gsub("Min pHave", "pHmin", Q2Kw.flat.out$Parameter) # Note that pHave has to be used here
+Q2Kw.flat.out$Parameter <- gsub("Max pHave", "pHmax", Q2Kw.flat.out$Parameter)  
+
+# Get rid of extra space in Reach column
+Q2Kw.flat.out$Reach <- gsub(" ", "", Q2Kw.flat.out$Reach)
+
+# Make time (hour) and Reach two digit integers
+Q2Kw.flat.out$Reach <- sprintf("%02d", as.integer(Q2Kw.flat.out$Reach))
+Q2Kw.flat.out$Time <- sprintf("%02d", as.integer(Q2Kw.flat.out$Time))
+
+# Combine parameters to make seperate result tag
+Q2Kw.flat.out$Combined.nm <- if_else(Q2Kw.flat.out$Parameter == "temp" | Q2Kw.flat.out$Parameter == "do",
+                                     paste0(Q2Kw.flat.out$Parameter, Q2Kw.flat.out$Reach, Q2Kw.flat.out$Time),
+                                     paste0(Q2Kw.flat.out$Parameter, Q2Kw.flat.out$Reach))
+
+# Make Value field display scientific notation
+Q2Kw.flat.out$Value <- formatC(as.numeric(Q2Kw.flat.out$Value), format = "e", digits = 8)
+
+# Write out flat text file
+Q2Kw.flat.out %>%
+    subset(select = c("Combined.nm", "Value")) %>%
+      write.fwf("\\\\deqhq1\\tmdl\\TMDL_WR\\MidCoast\\Models\\Dissolved Oxygen\\PEST-Synthetic-data\\Dan-edits\\Q2Kw_output.txt", 
+                rownames = F, colnames = F, quote = F, sep = "", width = 14) # Change path as needed
