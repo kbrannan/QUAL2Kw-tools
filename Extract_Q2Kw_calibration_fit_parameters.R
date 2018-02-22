@@ -17,7 +17,7 @@ Q2Kw.out <- Q2Kw.out[!grepl("oldph.out", Q2Kw.out)] # Un-needed file name
 # scan in file and process----
 Q2Kw.output <- scan(Q2Kw.out, what = "character", sep = "\n")
 
-# Get grab sample water quality parameters used to fit model during autocalibration process----
+# Grab sample water quality parameters used to fit model during autocalibration process----
 # Parameters are: average, min, and max pH (from continuous data)
 #                 CBODfast
 #                 Organic N
@@ -33,7 +33,7 @@ Q2Kw.output <- scan(Q2Kw.out, what = "character", sep = "\n")
 # Average values for parameters----
 
 Avg.grab.loc <- grep("Daily average water quality summary for main channel", Q2Kw.output)[1] #First occurence is the target line
-Avg.grab.nm.loc <- Avg.grab.loc + 1
+Avg.grab.nm.loc <- Avg.grab.loc + 1 
 Avg.grab.sites <- c(Avg.grab.loc + 8, Avg.grab.loc + 9, Avg.grab.loc + 11) # Need to manually set based on site locations
 
 Avg.grab.data <- Q2Kw.output[Avg.grab.sites]
@@ -165,7 +165,7 @@ names(Q2Kw.df) <- grab.nm
 Grab.fit.pm.Max <- subset(Q2Kw.df, select = c("Reach", "pH"))
 names(Grab.fit.pm.Max) <- c("Reach", "Max pH")
 
-# Extracting temporal data for temperature and dissolved oxgyen----
+# Extracting temporal data for temperature and dissolved oxygen----
 Cont.loc <- grep("Diel water quality in the main channel", Q2Kw.output)[1] #First occurence is the target line
 Cont.nm.loc <- Cont.loc + 1
 # Need to manually set based on site locations
