@@ -4,10 +4,6 @@
 
 # Dan Sobota, ODEQ
 
-# Load libraries----
-library(tidyverse)
-library(gdata)
-
 # Set working directory (modify as needed)----
 setwd("\\\\deqhq1\\tmdl\\TMDL_WR\\MidCoast\\Models\\Dissolved Oxygen\\Upper Yaquina River - 1710020401\\QUAL2Kw\\2016\\July")
 
@@ -62,7 +58,7 @@ Q2Kw.df <- data.frame(stringsAsFactors = F)
 
 # Build dataframe with rbind fill so that empty cells don't repeat
 for (z in 1:length(Q2Kw.list)) {
-  Q2Kw.df <- bind_rows(Q2Kw.df, as.data.frame(Q2Kw.list[[z]], 
+  Q2Kw.df <- rbind(Q2Kw.df, as.data.frame(Q2Kw.list[[z]], 
                                           stringsAsFactors = F))
 }
 
@@ -106,7 +102,7 @@ Q2Kw.df <- data.frame(stringsAsFactors = F)
 
 # Build dataframe with rbind fill so that empty cells don't repeat
 for (z in 1:length(Q2Kw.list)) {
-  Q2Kw.df <- bind_rows(Q2Kw.df, as.data.frame(Q2Kw.list[[z]], 
+  Q2Kw.df <- rbind(Q2Kw.df, as.data.frame(Q2Kw.list[[z]], 
                                               stringsAsFactors = F))
 }
 
@@ -151,7 +147,7 @@ Q2Kw.df <- data.frame(stringsAsFactors = F)
 
 # Build dataframe with rbind fill so that empty cells don't repeat
 for (z in 1:length(Q2Kw.list)) {
-  Q2Kw.df <- bind_rows(Q2Kw.df, as.data.frame(Q2Kw.list[[z]], 
+  Q2Kw.df <- rbind(Q2Kw.df, as.data.frame(Q2Kw.list[[z]], 
                                               stringsAsFactors = F))
 }
 
@@ -199,7 +195,7 @@ Q2Kw.df <- data.frame(stringsAsFactors = F)
 
 # Build dataframe with rbind fill so that empty cells don't repeat
 for (z in 1:length(Q2Kw.list)) {
-  Q2Kw.df <- bind_rows(Q2Kw.df, as.data.frame(Q2Kw.list[[z]], 
+  Q2Kw.df <- rbind(Q2Kw.df, as.data.frame(Q2Kw.list[[z]], 
                                               stringsAsFactors = F))
 }
 
@@ -215,10 +211,10 @@ names(Cont.fit.pm) <- c("Reach", "Time", "Water temperature", "Dissolved Oxygen"
 
 # Compile all data into one flat data frame and write out to flat text file----
 # Make dataframe first
-list(Cont.fit.pm, Grab.fit.pm.avg, Grab.fit.pm.Max, Grab.fit.pm.Min) %>%
-  reduce(left_join, by = "Reach") %>%
-    gather(Parameter, Value, -Reach, -Time) %>%
-      distinct(Value, .keep_all = T) -> Q2Kw.flat.out
+Q2Kw.list <- list(Cont.fit.pm, Grab.fit.pm.avg, Grab.fit.pm.Max, Grab.fit.pm.Min)
+Q2Kw.merge <- purrr::reduce(Q2Kw.list, merge, by = "Reach")
+Q2Kw.almost.flat.out <- tidyr::gather(Q2Kw.merge, Parameter, Value, -Reach, -Time)
+Q2Kw.flat.out <- dplyr::distinct(Q2Kw.almost.flat.out, Value, .keep_all = T)
 
 # Sub in requested names
 Q2Kw.flat.out$Parameter <- gsub("Water temperature", "temp", Q2Kw.flat.out$Parameter)
@@ -245,11 +241,16 @@ Q2Kw.flat.out$Combined.nm <- if_else(Q2Kw.flat.out$Parameter == "temp" | Q2Kw.fl
                                      paste0(Q2Kw.flat.out$Parameter, Q2Kw.flat.out$Reach, Q2Kw.flat.out$Time),
                                      paste0(Q2Kw.flat.out$Parameter, Q2Kw.flat.out$Reach))
 
+# Make Combined.nm 14 spaces wide
+Q2Kw.flat.out$Combined.nm <- sprintf("%-14s", Q2Kw.flat.out$Combined.nm)
+
 # Make Value field display scientific notation
 Q2Kw.flat.out$Value <- formatC(as.numeric(Q2Kw.flat.out$Value), format = "e", digits = 8)
 
+# Make Value 14 spaces wide
+Q2Kw.flat.out$Value <- sprintf("%-14s", Q2Kw.flat.out$Value)
+
 # Write out flat text file
-Q2Kw.flat.out %>%
-    subset(select = c("Combined.nm", "Value")) %>%
-      write.fwf("\\\\deqhq1\\tmdl\\TMDL_WR\\MidCoast\\Models\\Dissolved Oxygen\\PEST-Synthetic-data\\Dan-edits\\Q2Kw_output.txt", 
-                rownames = F, colnames = F, quote = F, sep = "", width = 14) # Change path as needed
+Q2Kw.flat <- subset(Q2Kw.flat.out, select = c("Combined.nm", "Value"))
+write.table(Q2Kw.flat, "\\\\deqhq1\\tmdl\\TMDL_WR\\MidCoast\\Models\\Dissolved Oxygen\\PEST-Synthetic-data\\Dan-edits\\Q2Kw_output.txt", 
+            row.names = F, col.names = F, quote = F, sep = "") # Change path as needed
