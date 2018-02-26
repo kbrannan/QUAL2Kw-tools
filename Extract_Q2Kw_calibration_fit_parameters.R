@@ -4,14 +4,22 @@
 
 # Dan Sobota, ODEQ
 
-# Set working directory (modify as needed)----
-setwd("\\\\deqhq1\\tmdl\\TMDL_WR\\MidCoast\\Models\\Dissolved Oxygen\\Upper Yaquina River - 1710020401\\QUAL2Kw\\2016\\July")
 
-Q2Kw.out <- list.files(pattern = "*.out")
-Q2Kw.out <- Q2Kw.out[!grepl("oldph.out", Q2Kw.out)] # Un-needed file name
+## input/output for script
+chr.dir.wrk <- "//deqhq1/TMDL/TMDL_WR/MidCoast/Models/Dissolved Oxygen/PEST-Synthetic-data/kevin_scratch" 
+
+chr.file.in <- "UY_do.out"
+
+chr.file.out <- "model.out"
+
+# Set working directory (modify as needed)----
+setwd(chr.dir.wrk)
+
+##Q2Kw.out <- list.files(pattern = "*.out")
+##Q2Kw.out <- Q2Kw.out[!grepl("oldph.out", Q2Kw.out)] # Un-needed file name
 
 # scan in file and process----
-Q2Kw.output <- scan(Q2Kw.out, what = "character", sep = "\n")
+Q2Kw.output <- scan(chr.file.in, what = "character", sep = "\n", quiet = TRUE)
 
 # Grab sample water quality parameters used to fit model during autocalibration process----
 # Parameters are: average, min, and max pH (from continuous data)
@@ -252,5 +260,5 @@ Q2Kw.flat.out$Value <- sprintf("%-14s", Q2Kw.flat.out$Value)
 
 # Write out flat text file
 Q2Kw.flat <- subset(Q2Kw.flat.out, select = c("Combined.nm", "Value"))
-write.table(Q2Kw.flat, "\\\\deqhq1\\tmdl\\TMDL_WR\\MidCoast\\Models\\Dissolved Oxygen\\PEST-Synthetic-data\\Dan-edits\\Q2Kw_output.txt", 
-            row.names = F, col.names = F, quote = F, sep = "") # Change path as needed
+write.table(Q2Kw.flat, chr.file.out, row.names = F, col.names = F, 
+            quote = F, sep = "")
