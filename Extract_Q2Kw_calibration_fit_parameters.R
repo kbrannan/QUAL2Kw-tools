@@ -237,7 +237,7 @@ Q2Kw.flat.out$Reach <- sprintf("%02d", as.integer(Q2Kw.flat.out$Reach))
 Q2Kw.flat.out$Time <- sprintf("%02d", as.integer(Q2Kw.flat.out$Time))
 
 # Combine parameters to make seperate result tag
-Q2Kw.flat.out$Combined.nm <- if_else(Q2Kw.flat.out$Parameter == "temp" | Q2Kw.flat.out$Parameter == "do",
+Q2Kw.flat.out$Combined.nm <- dplyr::if_else(Q2Kw.flat.out$Parameter == "temp" | Q2Kw.flat.out$Parameter == "do",
                                      paste0(Q2Kw.flat.out$Parameter, Q2Kw.flat.out$Reach, Q2Kw.flat.out$Time),
                                      paste0(Q2Kw.flat.out$Parameter, Q2Kw.flat.out$Reach))
 
